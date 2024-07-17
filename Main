@@ -1,0 +1,115 @@
+ #!/bin/sh
+
+#Create the three docker containers
+echo "Creating Docker containers...."
+sudo docker run --name Docker1 -it -d ubuntu /bin/sh >> /dev/null
+echo "Docker 1 created..."
+sudo docker run --name Docker2 -it -d ubuntu /bin/sh >> /dev/null
+echo "Docker 2 created..."
+sudo docker run --name Docker3 -it -d ubuntu /bin/sh >> /dev/null
+echo "Docker 3 created..."
+
+#Load respective files to respective docker directories
+docker cp ./Docker1 Docker1:home/ >> /dev/null
+echo "Loaded files to Docker 1..."
+docker cp ./Docker2 Docker2:home/ >> /dev/null
+echo "Loaded files to Docker 2..."
+docker cp ./Docker3 Docker3:home/ >> /dev/null
+echo "Loaded files to Docker 3..."
+
+#Call ./compileFiles to create final text
+echo "Beginning text creation GAME_OF_DOCKERS.txt..."
+./compileFiles
+echo "Finished loading text..."
+
+#Kill all created dockers
+docker rm -f Docker1 Docker2 Docker3 >> /dev/null
+
+
+# user interface
+while [ True ];
+do 
+
+  #Read Game of Dockers
+  echo "Would you like to read Game of Dockers Chapter? Yes/No"
+  while [ True ]; 
+  do
+    read input
+    if [ $input = "Yes" ];
+    then
+      cat GAME_OF_DOCKERS.txt
+      echo " "
+      break
+    else 
+      if [ $input = "No" ]
+      then
+        break
+      else
+        echo "Error, requires a Yes or a No input"
+      fi
+    fi
+  done
+
+  #Remove text from Game of Dockers
+  echo "Would you like to remove any text from Game of Dockers? Yes/No"
+  while [ True ]; 
+  do
+    read input
+    if [ $input = "Yes" ];
+    then
+      echo "Enter the text you would like to remove:"
+      read text
+      sed "s/ $text//" GAME_OF_DOCKERS.txt > temp.txt
+      cat temp.txt > GAME_OF_DOCKERS.txt
+      rm temp.txt
+      break
+    else 
+      if [ $input = "No" ]
+      then
+        break
+      else
+        echo "Error, requires a Yes or a No input"
+      fi
+    fi
+  done
+
+  #Add text to end of Game Of Dockers
+  echo "Would you like to add any text to the end of Game of Dockers? Yes/No"
+  while [ True ]; 
+  do
+    read input
+    if [ $input = "Yes" ]
+    then
+      echo "Enter the text you would like to add:"
+      read text
+      echo "$text" >> GAME_OF_DOCKERS.txt
+      break
+    else 
+      if [ $input = "No" ]
+      then
+        break
+      else
+        echo "Error, requires a Yes or a No input"
+      fi
+    fi
+  done
+
+  #exit the program
+  echo "Would you like to terminate the program? Yes/No"
+  while [ True ]; 
+  do
+    read input
+    if [ $input = "Yes" ];
+    then
+      exit
+    else 
+      if [ $input = "No" ]
+      then
+        break
+      else
+        echo "Error, requires a Yes or a No input"
+      fi
+    fi
+  done
+ 
+done

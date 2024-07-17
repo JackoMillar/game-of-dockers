@@ -1,0 +1,73 @@
+#!/bin/sh
+
+append_to_final_chapter()
+{
+  #init variables
+  local container_name=$1
+  local robin2=$2
+  local counter=0
+  local container_id=$(docker ps -qf "name=${container_name}")
+  
+  #Decide on which order to grab the files from the docker directory
+  if [ "$container_name" = "Docker1" ] || [ "$container_name" = "Docker3" ];
+  then
+   #Grab files by smallest size
+   files=$(docker exec "$container_id" ls -Sr /home/"$container_name")
+  else
+   #Grab files alphabetically
+   files=$(docker exec "$container_id" ls /home/"$container_name")
+  fi
+  
+  #loop through the files variable
+  for file in $files;
+  do
+    #check if counter = robin1 or robin2
+    if [ $counter -eq $robin1 ] || [ $counter -eq $(( robin1 + 1 )) ]; 
+    then
+      #counter starts at 0 so we need a variable that is one above it
+      text_num=$((counter + 1))
+      #tell user what file and directory is currently being accessed
+      echo "Loading ${text_num}th text from ${3}th Docker container..."
+      # copy the file to a temporary directory and silence the output 
+      docker cp "${container_name}:/home/${container_name}/${file}" /tmp/ >> /dev/null
+      
+      #if no more files to access then break
+      if [ -z "/tmp/${file}" ]; 
+      then
+         break;
+      fi
+      
+      #append file to GAME_OF_DOCKERS then remove
+      cat "/tmp/${file}" >> GAME_OF_DOCKERS.txt
+      rm "/tmp/${file}"
+    fi
+    #increase counter by 1
+    counter=$(( counter + 1 ))
+  done   
+}
+
+round_robin() 
+{
+  #init variable and set to 0
+  local robin1=0
+  
+  #Start round robin
+  while [ $robin1 -ne 10 ]
+  do 
+  #for loop for each container
+    for container_num in 1 2 3;
+    do
+      container="Docker${container_num}"
+      #call append function
+      append_to_final_chapter "${container}" "$robin1" "${container_num}"
+    done
+    #increase robin1 variable by 2 
+    robin1=$((robin1 + 2))
+  done
+}
+
+#Create text file
+> GAME_OF_DOCKERS.txt
+
+#Call round_robin function
+round_robin
